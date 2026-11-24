@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171923">
+<title>Genshin Team Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#11131b;--panel:#1b1f2b;--panel2:#242a38;--line:#343b4d;--text:#f4f5fa;--muted:#a8afc1;--gold:#e8bd70;--blue:#87b8ef;--green:#8bd6b0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#242a3b 0,#11131b 55%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:22px 18px 16px;max-width:1050px;margin:auto} .eyebrow{color:var(--gold);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+h1{font-size:clamp(28px,7vw,42px);line-height:1.05;margin:7px 0}header p{color:var(--muted);margin:9px 0 0;max-width:650px}
+main{max-width:1050px;margin:auto;padding:0 14px 40px;display:grid;gap:14px}
+.card{background:linear-gradient(145deg,#202635,#191d28);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 10px 30px #0002}
+h2{font-size:18px;margin:0 0 12px}.sub{color:var(--muted);font-size:13px;margin-top:-7px;margin-bottom:14px}
+.team{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.slot{background:var(--panel2);border:1px dashed #50596e;border-radius:13px;padding:10px;min-height:86px}
+.slot label{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+select,input{width:100%;background:#141823;color:var(--text);border:1px solid #41495c;border-radius:9px;padding:10px;font:inherit;min-width:0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{border:0;border-radius:10px;padding:11px 15px;font-weight:750;font-size:14px;background:var(--gold);color:#241b0d;cursor:pointer}
+button.secondary{background:#343c4f;color:var(--text);border:1px solid #4a5368}
+button:active{transform:scale(.98)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#151a25;border:1px solid var(--line);padding:12px;border-radius:12px}.stat b{display:block;color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.stat span{font-size:14px}
+.result{display:grid;gap:10px}.finding{padding:12px;background:#151a25;border:1px solid var(--line);border-radius:12px}.finding strong{display:block;margin-bottom:3px}.finding p{margin:0;color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:20px;background:#30394c;color:#cbd7ed;margin:2px 4px 2px 0}
+footer{color:var(--muted);text-align:center;font-size:12px;padding:8px 20px 26px}
+@media(min-width:760px){main{grid-template-columns:1.1fr .9fr;align-items:start}.wide{grid-column:1/-1}.team{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">Theorycrafting workspace</div><h1>Genshin Team Lab</h1><p>Build a four-character team and inspect its roles, reactions, buffs, energy considerations and rotation priorities.</p></header>
+<main>
+<section class="card">
+<h2>Team builder</h2><p class="sub">Choose up to four characters. You can change these at any time.</p>
+<div class="team" id="slots"></div>
+<div class="actions"><button id="analyse">Analyse team</button><button class="secondary" id="clear">Clear team</button></div>
+</section>
+<section class="card">
+<h2>Team snapshot</h2><p class="sub">A quick read of the selected lineup.</p>
+<div class="grid2">
+<div class="stat"><b>Elements</b><span id="elements">—</span></div>
+<div class="stat"><b>Roles</b><span id="roles">—</span></div>
+<div class="stat"><b>Reaction access</b><span id="reactions">—</span></div>
+<div class="stat"><b>Team size</b><span id="count">0 / 4</span></div>
+</div>
+</section>
+<section class="card wide">
+<h2>Technical analysis</h2><p class="sub">Initial synergy checks based on selected elements and known character functions.</p>
+<div id="report" class="result"><div class="finding"><strong>Ready when you are</strong><p>Select characters, then tap Analyse team. This starter version provides foundational checks; deeper character-specific calculations and live game-data updates are part of the next build stage.</p></div></div>
+</section>
+<section class="card wide">
+<h2>Build notes</h2><p class="sub">Keep track of what you want to improve.</p>
+<textarea id="notes" rows="3" placeholder="Example: improve energy recharge on the off-field support..." style="width:100%;resize:vertical;background:#141823;color:var(--text);border:1px solid #41495c;border-radius:10px;padding:11px;font:inherit"></textarea>
+<div class="actions"><button class="secondary" id="save">Save notes on this device</button><span id="saved" style="align-self:center;color:var(--green);font-size:12px"></span></div>
+</section>
+</main>
+<footer>Genshin Team Lab · Early prototype · Not affiliated with HoYoverse</footer>
+<script>
+const characters=[
+["Albedo","Geo","Off-field DPS / support"],["Alhaitham","Dendro","On-field DPS"],["Arataki Itto","Geo","On-field DPS"],["Bennett","Pyro","Healer / ATK buffer"],["Candace","Hydro","Support / infusion"],["Charlotte","Cryo","Healer"],["Chevreuse","Pyro","Overload support"],["Chongyun","Cryo","Support / infusion"],["Collei","Dendro","Off-field Dendro"],["Dehya","Pyro","Support / mitigation"],["Diluc","Pyro","On-field DPS"],["Diona","Cryo","Healer / shielder"],["Faruzan","Anemo","Anemo buffer"],["Fischl","Electro","Off-field DPS"],["Gaming","Pyro","On-field DPS"],["Ganyu","Cryo","DPS / off-field"],["Gorou","Geo","Geo DEF buffer"],["Hu Tao","Pyro","On-field DPS"],["Jean","Anemo","Healer / VV support"],["Kaeya","Cryo","Off-field DPS"],["Kachina","Geo","On-field / off-field DPS"],["Kazuha","Anemo","Elemental buffer / grouping"],["Keqing","Electro","On-field DPS"],["Kirara","Dendro","Shielder"],["Kuki Shinobu","Electro","Healer / Hyperbloom trigger"],["Layla","Cryo","Shielder"],["Lisa","Electro","Support / DEF shred"],["Mona","Hydro","Support / damage amplification"],["Nahida","Dendro","Dendro buffer / off-field DPS"],["Navia","Geo","On-field DPS"],["Neuvillette","Hydro","On-field DPS"],["Nilou","Hydro","Bloom support"],["Noelle","Geo","On-field DPS / healer"],["Raiden Shogun","Electro","On-field / off-field DPS"],["Rosaria","Cryo","Off-field DPS / CRIT support"],["Sara","Electro","Electro ATK buffer"],["Shenhe","Cryo","Cryo buffer"],["Sucrose","Anemo","EM buffer / grouping"],["Xiangling","Pyro","Off-field DPS"],["Xianyun","Anemo","Healer / plunge support"],["Xingqiu","Hydro","Off-field DPS / defensive support"],["Yelan","Hydro","Off-field DPS / damage buffer"],["Zhongli","Geo","Shielder / RES shred"]
+];
+const slots=document.getElementById("slots");
+for(let i=0;i<4;i++){const box=document.createElement("div");box.className="slot";box.innerHTML=`<label>Slot ${i+1}</label><select aria-label="Character slot ${i+1}"><option value="">Choose character…</option>${characters.map(c=>`<option value="${c[0]}">${c[0]} · ${c[1]}</option>`).join("")}</select>`;slots.appendChild(box)}
+const selects=[...slots.querySelectorAll("select")];
+function selected(){return selects.map(s=>characters.find(c=>c[0]===s.value)).filter(Boolean)}
+function update(){const team=selected();document.getElementById("count").textContent=team.length+" / 4";document.getElementById("elements").textContent=[...new Set(team.map(c=>c[1]))].join(", ")||"—";document.getElementById("roles").textContent=team.map(c=>c[2]).join("; ")||"—";const e=team.map(c=>c[1]);let r=[];if(e.includes("Hydro")&&e.includes("Pyro"))r.push("Vaporize");if(e.includes("Hydro")&&e.includes("Cryo"))r.push("Freeze");if(e.includes("Electro")&&e.includes("Dendro"))r.push("Quicken / Aggravate / Spread");if(e.includes("Hydro")&&e.includes("Dendro"))r.push("Bloom");if(e.includes("Pyro")&&e.includes("Electro"))r.push("Overload");if(e.includes("Anemo"))r.push("Swirl / VV potential");document.getElementById("reactions").textContent=r.join(", ")||"—"}
+selects.forEach(s=>s.addEventListener("change",update));
+document.getElementById("clear").onclick=()=>{selects.forEach(s=>s.value="");update();document.getElementById("report").innerHTML='<div class="finding"><strong>Team cleared</strong><p>Choose characters to begin a new analysis.</p></div>'};
+document.getElementById("analyse").onclick=()=>{const t=selected(),el=t.map(c=>c[1]),out=[];if(!t.length){out.push(["No characters selected","Choose at least one character to generate a report."])}else{out.push(["Line-up",t.map(c=>c[0]+" ("+c[1]+") — "+c[2]).join(" · ")]);if(el.includes("Hydro")&&el.includes("Pyro"))out.push(["Vaporize access","Hydro and Pyro are present. Check application timing and gauge ownership to determine who triggers Vaporize."]);if(el.includes("Electro")&&el.includes("Dendro"))out.push(["Quicken family","Electro + Dendro enables Quicken. Electro hits can trigger Aggravate; Dendro hits can trigger Spread."]);if(el.includes("Hydro")&&el.includes("Dendro"))out.push(["Bloom access","Hydro + Dendro enables Bloom. Check whether the team has a reliable, high-ownership trigger and sufficient survivability."]);if(el.includes("Anemo"))out.push(["Anemo utility","Anemo can enable grouping and, where the set and element conditions are met, Viridescent Venerer resistance reduction."]);if(el.filter(x=>x==="Geo").length>=2)out.push(["Geo resonance potential","Two Geo characters can activate Geo Resonance; maintaining a shield is important for its full offensive benefit."]);if(t.length<4)out.push(["Open slots","You have "+(4-t.length)+" empty slot(s). Consider survivability, energy generation, off-field application or a dedicated buffer."]);out.push(["Rotation checklist","Start with long-duration buffs and off-field abilities, apply the setup elements, then use the main damage window. Exact order depends on cooldowns, particle funneling and buff duration."]);}document.getElementById("report").innerHTML=out.map(x=>`<div class="finding"><strong>${x[0]}</strong><p>${x[1]}</p></div>`).join("");update()};
+document.getElementById("save").onclick=()=>{try{localStorage.setItem("gtl-notes",document.getElementById("notes").value);document.getElementById("saved").textContent="Saved on this device";}catch(e){document.getElementById("saved").textContent="Unable to save in this browser";}};
+try{document.getElementById("notes").value=localStorage.getItem("gtl-notes")||""}catch(e){}
+update();
+</script>
+</body></html>
