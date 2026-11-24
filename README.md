@@ -1,0 +1,2 @@
+# genshin-team-lab
+fire
