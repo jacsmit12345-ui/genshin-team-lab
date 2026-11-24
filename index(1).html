@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#11131b">
+<title>Genshin Team Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#10131c;--panel:#1b2030;--panel2:#242c3e;--line:#39445a;--text:#f5f6fb;--muted:#aab3c6;--gold:#e8bd70;--green:#8bd6b0;--red:#f0a0a0;--blue:#91bff0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#263047 0,#10131c 58%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:22px 18px 14px;max-width:1100px;margin:auto}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}h1{font-size:clamp(29px,7vw,43px);line-height:1.05;margin:7px 0}header p{color:var(--muted);margin:9px 0 0}
+main{max-width:1100px;margin:auto;padding:0 14px 42px;display:grid;gap:14px}.card{background:linear-gradient(145deg,#20283a,#181d2a);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 10px 30px #0002}h2{font-size:19px;margin:0 0 7px}.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.team{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.slot{background:var(--panel2);border:1px dashed #58647c;border-radius:13px;padding:10px}.slot label{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+select,input{width:100%;background:#121824;color:var(--text);border:1px solid #46536b;border-radius:9px;padding:10px;font:inherit;min-width:0}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:10px;padding:11px 15px;font-weight:750;font-size:14px;background:var(--gold);color:#241b0d;cursor:pointer}button.secondary{background:#343e53;color:var(--text);border:1px solid #4a5872}button:active{transform:scale(.98)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat,.finding{background:#141a27;border:1px solid var(--line);padding:12px;border-radius:12px}.stat b{display:block;color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:.08em}.stat span{font-size:14px;overflow-wrap:anywhere}
+.finding strong{display:block;margin-bottom:4px}.finding p{margin:0;color:var(--muted);font-size:13px}.finding.good{border-left:3px solid var(--green)}.finding.warn{border-left:3px solid var(--gold)}.finding.bad{border-left:3px solid var(--red)}.tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:20px;background:#30394c;color:#d4e0f3;margin:2px 4px 2px 0}
+.report{display:grid;gap:9px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.settings label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}.hint{color:var(--muted);font-size:12px;margin-top:9px}textarea{width:100%;resize:vertical;background:#121824;color:var(--text);border:1px solid #46536b;border-radius:10px;padding:11px;font:inherit}
+footer{color:var(--muted);text-align:center;font-size:12px;padding:8px 20px 26px}
+@media(min-width:780px){main{grid-template-columns:1.05fr .95fr;align-items:start}.wide{grid-column:1/-1}.team{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">Theorycrafting workspace · v0.2</div><h1>Genshin Team Lab</h1><p>Character-aware team checks: reactions, damage scaling, buffs, debuffs and practical rotation notes.</p></header>
+<main>
+<section class="card">
+<h2>Team builder</h2><p class="sub">Choose up to four characters. Set the character whose damage you want to prioritise.</p>
+<div class="team" id="slots"></div>
+<div class="settings" style="margin-top:12px">
+ <div><label for="carry">Priority character</label><select id="carry"><option value="">Auto-detect</option></select></div>
+ <div><label for="kachinaSet">Kachina artifact set</label><select id="kachinaSet"><option value="unknown">Not specified</option><option value="obsidian">Obsidian Codex</option><option value="scroll">Scroll of the Hero of Cinder City</option><option value="petra">Archaic Petra</option></select></div>
+</div>
+<div class="actions"><button id="analyse">Analyse team</button><button class="secondary" id="clear">Clear team</button></div>
+<p class="hint">The character database is an expanding starter dataset, not yet the complete game roster. Constellations, weapons and artifact stats are not assumed unless stated.</p>
+</section>
+<section class="card">
+<h2>Team snapshot</h2><p class="sub">Elemental coverage and broad role balance.</p>
+<div class="grid2">
+<div class="stat"><b>Elements</b><span id="elements">—</span></div><div class="stat"><b>Roles</b><span id="roles">—</span></div>
+<div class="stat"><b>Reaction access</b><span id="reactions">—</span></div><div class="stat"><b>Team size</b><span id="count">0 / 4</span></div>
+</div></section>
+<section class="card wide"><h2>Technical analysis</h2><p class="sub">Separates available reactions from effects that actually improve your priority character.</p><div id="report" class="report"><div class="finding"><strong>Ready when you are</strong><p>Select a team and analyse it. The report will explain both useful interactions and limitations.</p></div></div></section>
+<section class="card wide"><h2>Build notes</h2><p class="sub">Saved locally in this browser on this device.</p><textarea id="notes" rows="3" placeholder="Example: Kachina DEF / Geo DMG / CRIT; improve Xingqiu energy recharge..."></textarea><div class="actions"><button class="secondary" id="save">Save notes</button><span id="saved" class="hint"></span></div></section>
+<section class="card wide"><h2>Mechanics included in this build</h2><div class="grid2">
+<div class="finding"><strong>Elemental reactions</strong><p>Vaporize, Melt, Freeze, Electro-Charged, Superconduct, Overloaded, Swirl, Crystallize, Burning, Bloom, Hyperbloom, Burgeon, Quicken, Aggravate and Spread.</p></div>
+<div class="finding"><strong>Buff compatibility</strong><p>Checks whether a buff affects the selected character's element or scaling. For example, EM sharing is not treated as a direct Geo damage buff.</p></div>
+<div class="finding"><strong>Defence vs resistance</strong><p>Lisa's 15% DEF reduction is kept separate from elemental RES reduction such as Viridescent Venerer.</p></div>
+<div class="finding"><strong>Known character interactions</strong><p>Includes Kachina, Sucrose, Xingqiu and Lisa mechanics, with conditions and duration caveats.</p></div>
+</div></section>
+</main><footer>Genshin Team Lab · Experimental analysis · Not affiliated with HoYoverse</footer>
+<script>
+const db=[
+["Albedo","Geo","Off-field DPS / support"],["Alhaitham","Dendro","On-field DPS"],["Arataki Itto","Geo","On-field DPS"],["Bennett","Pyro","Healer / ATK buffer"],["Candace","Hydro","Support / infusion"],["Charlotte","Cryo","Healer"],["Chevreuse","Pyro","Overload support"],["Chongyun","Cryo","Support / infusion"],["Collei","Dendro","Off-field Dendro"],["Dehya","Pyro","Support / mitigation"],["Diluc","Pyro","On-field DPS"],["Diona","Cryo","Healer / shielder"],["Faruzan","Anemo","Anemo buffer"],["Fischl","Electro","Off-field DPS"],["Gaming","Pyro","On-field DPS"],["Ganyu","Cryo","DPS / off-field"],["Gorou","Geo","Geo DEF buffer"],["Hu Tao","Pyro","On-field DPS"],["Jean","Anemo","Healer / VV support"],["Kaeya","Cryo","Off-field DPS"],["Kachina","Geo","DEF-scaling Geo DPS / support"],["Kazuha","Anemo","Elemental DMG buffer / grouping"],["Keqing","Electro","On-field DPS"],["Kirara","Dendro","Shielder"],["Kuki Shinobu","Electro","Healer / Hyperbloom trigger"],["Layla","Cryo","Shielder"],["Lisa","Electro","Support / DEF shred"],["Mona","Hydro","Support / damage amplification"],["Nahida","Dendro","Dendro buffer / off-field DPS"],["Navia","Geo","On-field DPS"],["Neuvillette","Hydro","On-field DPS"],["Nilou","Hydro","Bloom support"],["Noelle","Geo","On-field DPS / healer"],["Raiden Shogun","Electro","On-field / off-field DPS"],["Rosaria","Cryo","Off-field DPS / CRIT support"],["Sara","Electro","Electro ATK buffer"],["Shenhe","Cryo","Cryo buffer"],["Sucrose","Anemo","EM buffer / grouping / VV"],["Xiangling","Pyro","Off-field DPS"],["Xianyun","Anemo","Healer / plunge support"],["Xingqiu","Hydro","Off-field DPS / defensive support"],["Yelan","Hydro","Off-field DPS / damage buffer"],["Zhongli","Geo","Shielder / universal RES shred"]
+];
+const $=id=>document.getElementById(id),slots=$("slots"),carry=$("carry");
+for(const c of db){let o=document.createElement("option");o.value=c[0];o.textContent=c[0]+" · "+c[1];carry.append(o)}
+for(let i=0;i<4;i++){let box=document.createElement("div");box.className="slot";box.innerHTML=`<label>Slot ${i+1}</label><select aria-label="Character slot ${i+1}"><option value="">Choose character…</option>${db.map(c=>`<option value="${c[0]}">${c[0]} · ${c[1]}</option>`).join("")}</select>`;slots.append(box)}
+const selects=[...slots.querySelectorAll("select")];
+function team(){return selects.map(s=>db.find(c=>c[0]===s.value)).filter(Boolean)}
+function add(out,kind,title,body){out.push({kind,title,body})}
+function update(){let t=team(),e=t.map(c=>c[1]);$("count").textContent=t.length+" / 4";$("elements").textContent=[...new Set(e)].join(", ")||"—";$("roles").textContent=t.map(c=>c[2]).join("; ")||"—";let r=[];if(e.includes("Hydro")&&e.includes("Pyro"))r.push("Vaporize");if(e.includes("Pyro")&&e.includes("Cryo"))r.push("Melt");if(e.includes("Hydro")&&e.includes("Cryo"))r.push("Freeze");if(e.includes("Hydro")&&e.includes("Electro"))r.push("Electro-Charged");if(e.includes("Electro")&&e.includes("Cryo"))r.push("Superconduct");if(e.includes("Pyro")&&e.includes("Electro"))r.push("Overloaded");if(e.includes("Anemo")&&e.some(x=>["Pyro","Hydro","Cryo","Electro"].includes(x)))r.push("Swirl");if(e.includes("Geo")&&e.some(x=>["Pyro","Hydro","Cryo","Electro"].includes(x)))r.push("Crystallize");if(e.includes("Dendro")&&e.includes("Pyro"))r.push("Burning");if(e.includes("Dendro")&&e.includes("Hydro"))r.push("Bloom");if(e.includes("Dendro")&&e.includes("Electro"))r.push("Quicken family");$("reactions").textContent=r.join(", ")||"—";let current=carry.value;carry.innerHTML='<option value="">Auto-detect</option>'+t.map(c=>`<option value="${c[0]}">${c[0]}</option>`).join("");if(t.some(c=>c[0]===current))carry.value=current}
+selects.forEach(s=>s.addEventListener("change",update));
+function analyse(){let t=team(),names=t.map(c=>c[0]),e=t.map(c=>c[1]),out=[];if(!t.length){$("report").innerHTML='<div class="finding"><strong>No characters selected</strong><p>Choose at least one character.</p></div>';return}
+let main=t.find(c=>c[0]===carry.value)||t.find(c=>c[0]==="Kachina")||t[0];add(out,"","Priority target",main[0]+" · "+main[1]+" · "+main[2]+". The report evaluates team effects against this character first.");
+let pairs=[];const has=(a,b)=>e.includes(a)&&e.includes(b);
+if(has("Hydro","Pyro"))pairs.push("Vaporize");if(has("Pyro","Cryo"))pairs.push("Melt");if(has("Hydro","Cryo"))pairs.push("Freeze");if(has("Hydro","Electro"))pairs.push("Electro-Charged");if(has("Electro","Cryo"))pairs.push("Superconduct (primarily a Physical RES utility reaction)");if(has("Pyro","Electro"))pairs.push("Overloaded");if(has("Anemo")&&e.some(x=>["Pyro","Hydro","Cryo","Electro"].includes(x)))pairs.push("Swirl");if(has("Geo","Pyro")||has("Geo","Hydro")||has("Geo","Cryo")||has("Geo","Electro"))pairs.push("Crystallize");if(has("Dendro","Pyro"))pairs.push("Burning");if(has("Dendro","Hydro"))pairs.push("Bloom");if(has("Dendro","Electro"))pairs.push("Quicken → Aggravate / Spread");if(pairs.length)add(out,"good","Reaction access",pairs.join(" · ")+". Access only confirms that the elements are present; actual output depends on application rate, aura, trigger ownership and enemy type.");
+if(names.includes("Kachina")){
+ add(out,"good","Kachina's damage scaling","Kachina's Turbo Twirly and Burst damage scale with DEF. Prioritise DEF, Geo DMG Bonus and CRIT for personal damage; ATK buffs and generic EM sharing are not direct multipliers to her DEF-scaling Geo hits.");
+ if(names.includes("Sucrose"))add(out,"warn","Sucrose → Kachina","Sucrose's EM sharing does not directly increase Kachina's Geo skill/burst damage. Sucrose can group enemies and Swirl Hydro/Electro to trigger 4-piece Viridescent Venerer resistance reduction for those elements, but cannot Swirl Geo or shred Geo RES with VV.");
+ if(names.includes("Lisa"))add(out,"good","Lisa → Kachina","Lisa's Burst can apply 15% enemy DEF reduction for 10s after hits from Lightning Rose. DEF reduction benefits Kachina's Geo damage too; it is not the same as Geo RES reduction. Keep enemies inside the Burst and ensure it is hitting them.");
+ if(names.includes("Xingqiu"))add(out,"good","Xingqiu → Kachina","Xingqiu adds off-field Hydro damage, Hydro application and defensive utility. Kachina's mounted Turbo Twirly slam is treated as Skill damage but uses a Normal Attack animation and can trigger Xingqiu's Burst coordinated attacks; keep using the slam input during his Burst. Independent off-field Turbo Twirly hits alone do not trigger those attacks.");
+ if(e.some(x=>["Hydro","Electro","Pyro","Cryo"].includes(x)))add(out,"good","Crystallize utility","Kachina can trigger Crystallize from existing Pyro, Hydro, Electro or Cryo auras, creating elemental shards and shields. This is defensive utility, not a direct Geo damage reaction. The trigger's EM affects shield strength, not Kachina's Geo hit damage.");
+ let set=$("kachinaSet").value;if(set==="obsidian")add(out,"warn","Obsidian Codex selected","Obsidian Codex is a personal damage set; it does not provide the teamwide elemental DMG buff associated with Scroll of the Hero of Cinder City.");
+ if(set==="scroll")add(out,"good","Scroll of the Hero of Cinder City selected","When its holder triggers an eligible reaction while in Nightsoul's Blessing, the set can grant teamwide DMG Bonus to the involved elements. Kachina can use Crystallize to support Geo and the crystallized element; exact uptime depends on triggering and state timing.");
+ if(set==="petra")add(out,"warn","Archaic Petra selected","The holder must pick up a shard of the relevant element to grant its team DMG Bonus. The buff is for the crystallized element, not Geo, so this is not a direct Geo buff for Kachina.");
+}
+if(names.includes("Sucrose")){add(out,"good","Sucrose's team buffs","After Sucrose's Skill or Burst hits, her A4 shares 20% of her EM with teammates for 8s. When she triggers Swirl, her A1 gives 50 EM for 8s to teammates matching the swirled element. These EM buffs help reaction damage, not DEF-scaling Geo talent damage.");if($("kachinaSet").value!=="unknown"&&names.includes("Kachina")){}}
+if(names.includes("Lisa"))add(out,"warn","Lisa's requirements","Lisa's DEF shred is tied to Lightning Rose hits; it is not automatically active for the whole rotation. Her Burst costs 80 Energy, so Energy Recharge and Burst uptime matter.");
+if(names.includes("Xingqiu"))add(out,"good","Xingqiu's Burst use","His Rain Swords require Normal Attack inputs to trigger coordinated attacks. Weave quick Normal Attacks between abilities and during the on-field damage window. His Hydro application enables reactions, but the best trigger ownership varies.");
+if(names.includes("Geo")&&e.filter(x=>x==="Geo").length>=2)add(out,"good","Geo Resonance","Two Geo characters enable Geo Resonance. Its full offensive benefit requires the active character to be protected by a shield; Crystallize shards can help, but shard shields may be fragile.");
+if(e.includes("Anemo")&&e.some(x=>["Pyro","Hydro","Cryo","Electro"].includes(x)))add(out,"good","Viridescent Venerer check","A 4-piece VV Anemo holder can reduce resistance to an element they Swirl for 10s. Apply the desired aura first, then Swirl it. VV cannot reduce Geo or Dendro RES through Swirl.");
+if(t.length<4)add(out,"warn","Open slots",(4-t.length)+" slot(s) remain. Consider a Geo damage buffer / Geo RES shred, reliable sustain, or energy support depending on the content.");
+add(out,"","Rotation starting point","Use long-duration off-field skills and bursts first; apply Hydro/Electro aura, then use Sucrose to Swirl the element whose RES you want reduced. Cast Lisa's Burst while enemies can remain in its field. Set up Kachina's Skill/Nightsoul state and take her damage window while refreshing Xingqiu's coordinated attacks with Normal Attack inputs. Adjust order for cooldowns and energy.");
+add(out,"","Limitations","This is a rule-based team checker, not a damage simulator. It does not yet calculate exact DPS, aura gauge, enemy-specific resistance, particle funneling, weapon/artifact substats, constellation changes or full rotation uptime. Unlisted character mechanics are not inferred.");
+$("report").innerHTML=out.map(x=>`<div class="finding ${x.kind}"><strong>${x.title}</strong><p>${x.body}</p></div>`).join("")}
+$("analyse").onclick=analyse;$("clear").onclick=()=>{selects.forEach(s=>s.value="");carry.value="";$("report").innerHTML='<div class="finding"><strong>Team cleared</strong><p>Choose characters to begin a new analysis.</p></div>';update()};
+$("save").onclick=()=>{try{localStorage.setItem("gtl-notes-v2",$("notes").value);$("saved").textContent="Saved on this device."}catch(e){$("saved").textContent="Browser storage unavailable."}};
+try{$("notes").value=localStorage.getItem("gtl-notes-v2")||localStorage.getItem("gtl-notes")||""}catch(e){}
+update();
+</script></body></html>
