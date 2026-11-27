@@ -1,0 +1,17 @@
+{
+  "name": "Genshin Team Lab",
+  "short_name": "Team Lab",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d111b",
+  "theme_color": "#10131c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
